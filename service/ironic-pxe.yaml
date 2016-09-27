@@ -1,0 +1,17 @@
+service:
+  name: ironic-pxe
+  host-net: true
+  containers:
+    - name: ironic-pxe
+      image: ironic-pxe
+      probes:
+        readiness: "true"
+        liveness: "true"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      daemon:
+        command: in.tftpd --verbose --foreground --user root --map-file /map-file
+                 --address {% raw %}{{ network_topology["private"]["address"] }}{% endraw %}:69
+                 /tftpboot /var/lib/ironic/tftpboot

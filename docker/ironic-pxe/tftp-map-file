@@ -1,0 +1,3 @@
+re (pxelinux.0|chain.c32|ldlinux.c32)$ /tftpboot/\1
+r ^([^/]) /var/lib/ironic/tftpboot/\1
+r ^(/tftpboot/) /var/lib/ironic/tftpboot/\2

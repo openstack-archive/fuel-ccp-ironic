@@ -1,0 +1,20 @@
+FROM {{ namespace }}/ironic-base:{{ tag }}
+MAINTAINER {{ maintainer }}
+
+RUN apt-get install -y --no-install-recommends \
+        tftpd-hpa \
+        syslinux-common \
+        syslinux \
+        pxelinux \
+    && apt-get clean
+
+COPY tftp-map-file /map-file
+
+RUN mkdir -p /tftpboot
+RUN cp \
+        /usr/lib/PXELINUX/pxelinux.0 \
+        /usr/lib/syslinux/modules/bios/chain.c32 \
+        /usr/lib/syslinux/modules/bios/ldlinux.c32 \
+    /tftpboot
+
+USER root

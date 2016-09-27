@@ -1,0 +1,22 @@
+service:
+  name: ironic-conductor
+  host-net: true
+  containers:
+    - name: ironic-conductor
+      image: ironic-conductor
+      probes:
+        readiness: "true"
+        liveness: "true"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      daemon:
+        command: ironic-conductor --config-file /etc/ironic/ironic.conf
+        files:
+          - ironic.conf
+files:
+  ironic.conf:
+    path: /etc/ironic/ironic.conf
+    content: ironic.conf.j2
+    perm: "0600"
