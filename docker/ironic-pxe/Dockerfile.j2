@@ -1,0 +1,14 @@
+FROM {{ image_spec("ironic-base") }}
+MAINTAINER {{ maintainer }}
+
+RUN apt-get install -y --no-install-recommends \
+        tftpd-hpa \
+        syslinux-common \
+        syslinux \
+        pxelinux \
+        ipxe \
+    && apt-get clean
+
+COPY tftp-map-file /map-file
+
+USER root
