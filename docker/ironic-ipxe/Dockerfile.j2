@@ -1,0 +1,13 @@
+FROM {{ image_spec("ironic-base") }}
+MAINTAINER {{ maintainer }}
+
+RUN apt-get install -y --no-install-recommends \
+        nginx-light \
+    && apt-get clean
+
+RUN chmod 777 /run
+
+RUN rm /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default \
+    && chown -R ironic: /etc/nginx /var/lib/nginx /var/log/nginx
+
+USER ironic
