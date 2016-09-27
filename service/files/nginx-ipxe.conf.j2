@@ -1,0 +1,4 @@
+server {
+  listen {{ network_topology["private"]["address"] }}:{{ ironic.ipxe.external_port }};
+  root /var/lib/ironic/httpboot;
+}
