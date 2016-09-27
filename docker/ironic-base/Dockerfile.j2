@@ -1,0 +1,17 @@
+FROM {{ image_spec("openstack-base") }}
+MAINTAINER {{ maintainer }}
+
+{{ copy_sources("openstack/ironic", "/ironic") }}
+{{ copy_sources("openstack/ironic-staging-drivers", "/ironic-staging-drivers") }}
+
+RUN useradd --user-group --create-home --home-dir /home/ironic ironic \
+    && /var/lib/microservices/venv/bin/pip install --upgrade -c /ironic/requirements.txt /ironic \
+    && /var/lib/microservices/venv/bin/pip install --upgrade -r /ironic-staging-drivers/ironic_staging_drivers/ansible/python-requirements.txt \
+    && /var/lib/microservices/venv/bin/pip install --upgrade -c /ironic-staging-drivers/requirements.txt /ironic-staging-drivers \
+    && mkdir -p /etc/ironic /etc/ironic/keys /var/lib/ironic /home/ironic/.ssh /var/log/ironic \
+    && cp -r /ironic/etc/ironic/* /etc/ironic/ \
+    && chown -R ironic: /etc/ironic /var/lib/ironic /var/log/ironic /home/ironic \
+    && chmod -R 700 /home/ironic \
+    && rm -rf /ironic /ironic-staging-drivers
+
+RUN usermod -a -G microservices ironic

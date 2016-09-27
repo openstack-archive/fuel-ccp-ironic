@@ -1,0 +1,11 @@
+FROM {{ image_spec("ironic-base") }}
+MAINTAINER {{ maintainer }}
+
+RUN apt-get install -y --no-install-recommends \
+        qemu-utils \
+        ipmitool \
+        socat \
+        openssh-client \
+    && apt-get clean
+
+USER ironic

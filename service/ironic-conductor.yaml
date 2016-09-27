@@ -1,0 +1,87 @@
+dsl_version: 0.1.0
+service:
+  name: ironic-conductor
+  hostNetwork: true
+  kind: DaemonSet
+  containers:
+    - name: ironic-conductor
+      image: ironic-conductor
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      pre:
+        - name: ironic-post-swift-tempurl-key
+          dependencies:
+            - radosgw
+          type: single
+          command: swift --insecure
+                   --os-auth-url {{ address('keystone', keystone.public_port, with_scheme=True) }}/v3
+                   --os-project-name service --os-project-domain-name default --os-user-domain-name default
+                   --os-username {{ glance.user }} --os-password {{ glance.password }} --os-endpoint-type internalURL
+                   post -m "Temp-URL-Key:{{ ironic.swift_temp_url_key }}"
+      daemon:
+        command: ironic-conductor --config-file /etc/ironic/ironic.conf
+        files:
+          - ironic.conf
+          - ssh_key
+        dependencies:
+          - ironic-db-sync
+          - ironic-post-swift-tempurl-key
+    - name: ironic-pxe
+      image: ironic-pxe
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      pre:
+        - name: pxe-bootstrap
+          command: /opt/ccp/bin/pxe-bootstrap.sh
+      daemon:
+        command: in.tftpd --verbose --foreground --user root --map-file /map-file
+                 --address {% raw %}{{ network_topology["private"]["address"] }}{% endraw %}:69
+                 /var/lib/ironic/tftpboot
+        files:
+          - pxe-bootstrap.sh
+    - name: ironic-ipxe
+      image: ironic-ipxe
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      daemon:
+        command: nginx -g 'daemon off; error_log stderr;'
+        files:
+          - nginx-ipxe.conf
+files:
+  ironic.conf:
+    path: /etc/ironic/ironic.conf
+    content: ironic.conf.j2
+    perm: "0600"
+  pxe-bootstrap.sh:
+    path: /opt/ccp/bin/pxe-bootstrap.sh
+    content: pxe-bootstrap.sh
+    perm: "0755"
+  nginx-ipxe.conf:
+    path: /etc/nginx/sites-enabled/nginx-ipxe.conf
+    content: nginx-ipxe.conf.j2
+    perm: "0644"
+  ssh_key:
+    path: /home/ironic/.ssh/id_rsa
+    content: ssh_key.j2
+    perm: "0400"
