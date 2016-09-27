@@ -1,0 +1,27 @@
+service:
+  name: ironic-pxe
+  host-net: true
+  containers:
+    - name: ironic-pxe
+      image: ironic-pxe
+      probes:
+        readiness: "true"
+        liveness: "true"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      pre:
+        - name: pxe-bootstrap
+          command: /opt/ccp/bin/pxe-bootstrap.sh
+      daemon:
+        command: in.tftpd --verbose --foreground --user root --map-file /map-file
+                 --address {% raw %}{{ network_topology["private"]["address"] }}{% endraw %}:69
+                 /var/lib/ironic/tftpboot
+        files:
+          - pxe-bootstrap.sh
+files:
+  pxe-bootstrap.sh:
+    path: /opt/ccp/bin/pxe-bootstrap.sh
+    content: pxe-bootstrap.sh
+    perm: "0755"
