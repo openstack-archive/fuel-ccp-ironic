@@ -1,0 +1,72 @@
+service:
+  name: ironic-api
+  ports:
+    - {{ ironic_api_port }}
+  containers:
+    - name: ironic-api
+      image: ironic-api
+      privileged: true
+      probes:
+        readiness: "true"
+        liveness: "true"
+      pre:
+        - name: ironic-db-create
+          type: single
+          command: mysql -v -u root -p{{ db_root_password }} -h mariadb -e 'create database `{{ ironic_db_name }}`;
+                   grant all privileges on `{{ ironic_db_name }}`.* to "{{ ironic_db_username }}"@"%" identified by
+                   "{{ ironic_db_password }}"'
+          dependencies:
+            - mariadb
+          files:
+            - ironic.conf
+        - name: ironic-db-sync
+          type: single
+          command: ironic-dbsync
+          dependencies:
+            - ironic-db-create
+          files:
+            - ironic.conf
+        - name: ironic-user-create
+          type: single
+          command: openstack user create --project service --password {{ ironic_password }} {{ ironic_username }}
+          dependencies:
+            - keystone-create-project
+        - name: ironic-role-add
+          dependencies:
+            - ironic-user-create
+          type: single
+          command: openstack role add --project service --user {{ ironic_username }} admin
+        - name: ironic-service-create
+          dependencies:
+            - keystone
+          type: single
+          command: openstack service create --name ironic --description "OpenStack Baremetal" baremetal
+        - name: ironic-public-endpoint-create
+          dependencies:
+            - ironic-service-create
+          type: single
+          command: openstack endpoint create --region RegionOne baremetal public
+                   http://{{ address('ironic-api') }}:{{ ironic_api_port }}
+        - name: ironic-internal-endpoint-create
+          dependencies:
+            - ironic-service-create
+          type: single
+          command: openstack endpoint create --region RegionOne baremetal internal
+                   http://{{ address('ironic-api') }}:{{ ironic_api_port }}
+        - name: ironic-admin-endpoint-create
+          dependencies:
+            - ironic-service-create
+          type: single
+          command: openstack endpoint create --region RegionOne baremetal admin
+                   http://{{ address('ironic-api') }}:{{ ironic_api_port }}
+      daemon:
+        command: ironic-api --config-file /etc/ironic/ironic.conf
+        files:
+          - ironic.conf
+        dependencies:
+          - rabbitmq
+files:
+  ironic.conf:
+    path: /etc/ironic/ironic.conf
+    content: ironic.conf.j2
+    perm: "0600"

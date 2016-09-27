@@ -1,0 +1,24 @@
+configs:
+  ironic_api_port: 6385
+
+  ironic_username: ironic
+  ironic_password: password
+  ironic_db_username: ironic
+  ironic_db_password: password
+  ironic_db_name: ironic
+
+  ironic_logging_debug: "false"
+
+  ironic_automated_clean: "false"
+  ironic_enabled_drivers: "fake,agent_ssh,agent_ipmitool_socat"
+  ironic_enabled_network_interfaces: "flat,noop"
+  ironic_default_network_interface: flat
+  # FIXME (ashestakov): when swift available, configure swift_account dynamically
+  ironic_swift_account: AUTH_a422b2-91f3-2f46-74b7-d7c9e8958f5d30
+  ironic_swift_temp_url_key: password
+  ironic_temp_url_endpoint_type: radosgw
+
+sources:
+  openstack/ironic:
+    git_url: https://github.com/openstack/ironic.git
+    git_ref: master
