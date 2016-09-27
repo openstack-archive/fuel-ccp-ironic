@@ -1,0 +1,23 @@
+configs:
+  ironic:
+    api_port: 6385
+
+    username: ironic
+    password: password
+    db_username: ironic
+    db_password: password
+    db_name: ironic
+
+    logging_debug: false
+
+    automated_clean: false
+    enabled_drivers: "fake,agent_ssh,agent_ipmitool_socat"
+    enabled_network_interfaces: "flat,noop"
+    default_network_interface: flat
+    swift_endpoint_url: http://10.20.0.1:7480
+    swift_temp_url_key: password
+
+sources:
+  openstack/ironic:
+    git_url: https://github.com/openstack/ironic.git
+    git_ref: stable/newton
