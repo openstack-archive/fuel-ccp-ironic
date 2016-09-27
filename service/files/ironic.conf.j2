@@ -1,0 +1,88 @@
+[DEFAULT]
+debug = {{ ironic.logging_debug }}
+use_syslog = False
+use_stderr = True
+
+my_ip = {{ network_topology["private"]["address"] }}
+
+transport_url = rabbit://{{ rabbitmq.user }}:{{ rabbitmq.password }}@{{ address('rabbitmq', rabbitmq.port) }}
+
+enabled_drivers = {{ ironic.enabled_drivers }}
+
+enabled_network_interfaces = noop,flat
+default_network_interface = flat
+
+[api]
+host_ip = {{ network_topology["private"]["address"] }}
+port = {{ ironic.api_port.cont }}
+
+[database]
+connection = mysql+pymysql://{{ ironic.db.username }}:{{ ironic.db.password }}@{{ address('mariadb', mariadb.port) }}/{{ ironic.db.name }}
+max_retries = -1
+
+[keystone_authtoken]
+auth_uri = {{ address('keystone', keystone.public_port, with_scheme=True) }}
+auth_url = {{ address('keystone', keystone.admin_port, with_scheme=True) }}
+auth_type = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic.username }}
+password = {{ ironic.password }}
+memcached_servers = {{ address('memcached', memcached.port) }}
+
+[service_catalog]
+auth_type = password
+auth_url = {{ address('keystone', keystone.public_port, with_scheme=True) }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic.username }}
+password = {{ ironic.password }}
+
+[conductor]
+#(FIXME) ashestakov: api endpoint should be available from provision network
+api_url = {{ address('ironic', ironic.api_port, external=True, with_scheme=True) }}
+automated_clean = {{ ironic.automated_clean }}
+
+[neutron]
+auth_type = password
+auth_url = {{ address('keystone', keystone.public_port, with_scheme=True) }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic.username }}
+password = {{ ironic.password }}
+
+url={{ address('neutron-server', neutron.server_port, with_scheme=True) }}
+
+[glance]
+auth_type = password
+auth_url = {{ address('keystone', keystone.public_port, with_scheme=True) }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic.username }}
+password = {{ ironic.password }}
+
+glance_api_servers = {{ address('glance-api', glance.api_port, with_scheme=True) }}
+
+swift_endpoint_url = {{ address('radosgw', radosgw.port, external=True, with_scheme=True) }}
+swift_temp_url_key = {{ ironic.swift_temp_url_key }}
+temp_url_endpoint_type = radosgw
+
+[pxe]
+pxe_append_params = nofb nomodeset vga=normal console=ttyS0 systemd.journald.forward_to_console=yes ipa-debug=1
+tftp_root = /var/lib/ironic/tftpboot
+tftp_master_path = /var/lib/ironic/tftpboot/master_images
+
+{% if ironic.ipxe.enable %}
+ipxe_enabled = True
+ipxe_use_swift = {{ ironic.ipxe.use_swift }}
+pxe_bootfile_name=undionly.kpxe
+pxe_config_template=$pybasedir/drivers/modules/ipxe_config.template
+
+[deploy]
+http_root=/var/lib/ironic/httpboot
+http_url=http://{{ network_topology["private"]["address"] }}:{{ ironic.ipxe.external_port }}
+{% endif %}
