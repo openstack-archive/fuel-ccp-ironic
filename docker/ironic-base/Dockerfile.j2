@@ -1,0 +1,14 @@
+FROM {{ image_spec("openstack-base") }}
+MAINTAINER {{ maintainer }}
+
+{{ copy_sources("openstack/ironic", "/ironic") }}
+
+RUN useradd --user-group --create-home --home-dir /var/lib/ironic ironic \
+    && chmod 755 /var/lib/ironic \
+    && /var/lib/microservices/venv/bin/pip install --upgrade -c /ironic/requirements.txt /ironic \
+    && mkdir -p /etc/ironic /var/lib/ironic /var/log/ironic \
+    && cp -r /ironic/etc/ironic/* /etc/ironic/ \
+    && chown -R ironic: /etc/ironic /var/lib/ironic /var/log/ironic \
+    && rm -rf /ironic
+
+RUN usermod -a -G microservices ironic
