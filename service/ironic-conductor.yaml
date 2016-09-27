@@ -1,0 +1,71 @@
+service:
+  name: ironic-conductor
+  hostNetwork: true
+  containers:
+    - name: ironic-conductor
+      image: ironic-conductor
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      daemon:
+        command: ironic-conductor --config-file /etc/ironic/ironic.conf
+        files:
+          - ironic.conf
+        dependencies:
+          - ironic-db-sync
+    - name: ironic-pxe
+      image: ironic-pxe
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      pre:
+        - name: pxe-bootstrap
+          command: /opt/ccp/bin/pxe-bootstrap.sh
+      daemon:
+        command: in.tftpd --verbose --foreground --user root --map-file /map-file
+                 --address {% raw %}{{ network_topology["private"]["address"] }}{% endraw %}:69
+                 /var/lib/ironic/tftpboot
+        files:
+          - pxe-bootstrap.sh
+    # {% if ironic.ipxe.enable %}
+    - name: ironic-ipxe
+      image: ironic-ipxe
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      daemon:
+        command: nginx -g 'daemon off; error_log stderr;'
+        files:
+          - nginx-ipxe.conf
+    # {% endif %}
+files:
+  ironic.conf:
+    path: /etc/ironic/ironic.conf
+    content: ironic.conf.j2
+    perm: "0600"
+  pxe-bootstrap.sh:
+    path: /opt/ccp/bin/pxe-bootstrap.sh
+    content: pxe-bootstrap.sh
+    perm: "0755"
+  nginx-ipxe.conf:
+    path: /etc/nginx/sites-enabled/nginx-ipxe.conf
+    content: nginx-ipxe.conf.j2
+    perm: "0644"
