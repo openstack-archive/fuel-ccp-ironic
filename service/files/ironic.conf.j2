@@ -1,0 +1,79 @@
+[DEFAULT]
+debug = {{ ironic_logging_debug }}
+use_syslog = False
+use_stderr = True
+
+#(FIXME) ashestakov: for conductor service this address should be routable from baremetal network
+my_ip = {{ network_topology["private"]["address"] }}
+
+transport_url = rabbit://{{ rabbitmq_user }}:{{ rabbitmq_password }}@{{ address('rabbitmq') }}:{{ rabbitmq_port }}
+
+enabled_drivers = {{ ironic_enabled_drivers }}
+
+enabled_network_interfaces = {{ ironic_enabled_network_interfaces }}
+default_network_interface = {{ ironic_default_network_interface }}
+
+[api]
+host_ip = {{ network_topology["private"]["address"] }}
+port = {{ ironic_api_port }}
+
+[database]
+connection = mysql+pymysql://{{ ironic_db_username }}:{{ ironic_db_password }}@{{ address('mariadb') }}/{{ ironic_db_name }}
+max_retries = -1
+
+[keystone_authtoken]
+auth_uri = http://{{ address('keystone') }}:{{ keystone_public_port }}
+auth_url = http://{{ address('keystone') }}:{{ keystone_admin_port }}
+auth_type = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic_username }}
+password = {{ ironic_password }}
+memcached_servers = {{ address('memcached') }}:{{ memcached.port }}
+
+[service_catalog]
+auth_type = password
+auth_url = http://{{ address('keystone') }}:{{ keystone_public_port }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic_username }}
+password = {{ ironic_password }}
+
+[conductor]
+#(FIXME) ashestakov: api endpoint should be available from baremetal network, needs VIP/LB functionality
+api_url = http://{{ address('ironic-api') }}.svc.cluster.local:{{ ironic_api_port }}
+automated_clean = {{ ironic_automated_clean }}
+
+[neutron]
+auth_type = password
+auth_url = http://{{ address('keystone') }}:{{ keystone_public_port }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic_username }}
+password = {{ ironic_password }}
+
+url=http://{{ address('neutron-server') }}:{{ neutron_server_port }}
+
+[glance]
+auth_type = password
+auth_url = http://{{ address('keystone') }}:{{ keystone_public_port }}
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = {{ ironic_username }}
+password = {{ ironic_password }}
+
+glance_host = {{ address('glance-api') }}
+glance_port = {{ glance_api_port }}
+
+swift_endpoint_url = {{ ironic_swift_endpoint_url }}
+swift_temp_url_key = {{ ironic_swift_temp_url_key }}
+temp_url_endpoint_type = radosgw
+
+[pxe]
+pxe_append_params = nofb nomodeset vga=normal console=ttyS0 systemd.journald.forward_to_console=yes ipa-debug=1
+tftp_root = /var/lib/ironic/tftpboot
+tftp_master_path = /var/lib/ironic/tftpboot/master_images
