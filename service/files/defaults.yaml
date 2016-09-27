@@ -1,0 +1,37 @@
+configs:
+  ironic:
+    api_port:
+      cont: 6385
+      ingress: ironic
+
+    username: ironic
+    password: password
+
+    db:
+      username: ironic
+      password: password
+      name: ironic
+
+    logging_debug: false
+
+    automated_clean: false
+    enabled_drivers: "fake,pxe_ssh_ansible,pxe_ipmitool_ansible"
+    swift:
+      temp_url_key: password
+
+    ipxe:
+      external_port: 6388
+      use_swift: false
+
+    ssh_key: false
+
+    ansible:
+      use_ramdisk_callback: true
+
+sources:
+  openstack/ironic:
+    git_url: https://git.openstack.org/openstack/ironic.git
+    git_ref: stable/newton
+  openstack/ironic-staging-drivers:
+    git_url: https://git.openstack.org/openstack/ironic-staging-drivers
+    git_ref: master
