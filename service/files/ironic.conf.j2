@@ -9,8 +9,13 @@ transport_url = rabbit://{{ rabbitmq.user }}:{{ rabbitmq.password }}@{{ address(
 
 enabled_drivers = {{ ironic.enabled_drivers }}
 
+{% if ironic.multitenancy.enable %}
+enabled_network_interfaces = noop,flat,neutron
+default_network_interface = neutron
+{% else %}
 enabled_network_interfaces = noop,flat
 default_network_interface = flat
+{% endif %}
 
 [api]
 host_ip = {{ network_topology["private"]["address"] }}
@@ -55,6 +60,10 @@ username = {{ ironic.username }}
 password = {{ ironic.password }}
 
 url=http://{{ address('neutron-server') }}:{{ neutron.server_port }}
+{% if ironic.multitenancy.enable and role_name == 'ironic-conductor' %}
+provisioning_network_uuid=___PROVISIONING_UUID___
+cleaning_network_uuid=___CLEANING_UUID___
+{% endif %}
 
 [glance]
 auth_type = password
