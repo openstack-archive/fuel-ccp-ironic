@@ -11,6 +11,30 @@ service:
         - name: ironic
           type: host
           path: /var/lib/ironic
+      # {% if ironic.multitenancy.enable %}
+      pre:
+        - name: ironic-provisioning-net-set
+          dependencies:
+            - ironic-provisioning-net-create
+          command: >-
+                   openstack network show -f value -c id ironic-provisioning |
+                   xargs -I '{}' sed -i 's/___PROVISIONING_UUID___/{}/g' /etc/ironic/ironic.conf
+        # {% if ironic.multitenancy.provisioning_net.physnet != ironic.multitenancy.cleaning_net.physnet or ironic.multitenancy.provisioning_net.vlan != ironic.multitenancy.cleaning_net.vlan %}
+        - name: ironic-cleaning-net-set
+          dependencies:
+            - ironic-cleaning-net-create
+          command: >-
+                   openstack network show -f value -c id ironic-cleaning |
+                   xargs -I '{}' sed -i 's/___CLEANING_UUID___/{}/g' /etc/ironic/ironic.conf
+        # {% else %}
+        - name: ironic-cleaning-net-set
+          dependencies:
+            - ironic-provisioning-net-create
+          command: >-
+                   openstack network show -f value -c id ironic-provisioning |
+                   xargs -I '{}' sed -i 's/___CLEANING_UUID___/{}/g' /etc/ironic/ironic.conf
+        # {% endif %}
+      # {% endif %}
       daemon:
         command: ironic-conductor --config-file /etc/ironic/ironic.conf
         files:

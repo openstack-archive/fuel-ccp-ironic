@@ -57,6 +57,28 @@ service:
           type: single
           command: openstack endpoint create --region RegionOne baremetal admin
                    http://{{ address('ironic-api') }}:{{ ironic.api_port }}
+        # {% if ironic.multitenancy.enable %}
+        - name: ironic-provisioning-net-create
+          type: single
+          dependencies:
+            - neutron-server
+          command: >-
+                   openstack network create --provider-network-type vlan
+                   --provider-segment {{ ironic.multitenancy.provisioning_net.vlan }}
+                   --provider-physical-network {{ ironic.multitenancy.provisioning_net.physnet }}
+                   ironic-provisioning
+        # {% if ironic.multitenancy.provisioning_net.physnet != ironic.multitenancy.cleaning_net.physnet or ironic.multitenancy.provisioning_net.vlan != ironic.multitenancy.cleaning_net.vlan %}
+        - name: ironic-cleaning-net-create
+          type: single
+          dependencies:
+            - neutron-server
+          command: >-
+                   openstack network create --provider-network-type vlan
+                   --provider-segment {{ ironic.multitenancy.cleaning_net.vlan }}
+                   --provider-physical-network {{ ironic.multitenancy.cleaning_net.physnet }}
+                   ironic-cleaning
+        # {% endif %}
+        # {% endif %}
       daemon:
         command: ironic-api --config-file /etc/ironic/ironic.conf
         files:
