@@ -17,6 +17,10 @@ configs:
     enabled_drivers: "fake,agent_ssh,agent_ipmitool_socat"
     swift_temp_url_key: password
 
+    ipxe:
+      enable: true
+      external_port: 32480
+
 sources:
   openstack/ironic:
     git_url: https://github.com/openstack/ironic.git

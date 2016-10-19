@@ -1,0 +1,4 @@
+server {
+  listen {{ network_topology["private"]["address"] }}:8080;
+  root /var/lib/ironic/httpboot;
+}

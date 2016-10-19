@@ -76,3 +76,13 @@ temp_url_endpoint_type = radosgw
 pxe_append_params = nofb nomodeset vga=normal console=ttyS0 systemd.journald.forward_to_console=yes ipa-debug=1
 tftp_root = /var/lib/ironic/tftpboot
 tftp_master_path = /var/lib/ironic/tftpboot/master_images
+
+{% if ironic.ipxe.enable %}
+ipxe_enabled = True
+pxe_bootfile_name=undionly.kpxe
+pxe_config_template=$pybasedir/drivers/modules/ipxe_config.template
+
+[deploy]
+http_root=/var/lib/ironic/httpboot
+http_url=http://{{ network_topology["private"]["address"] }}:{{ ironic.ipxe.external_port }}
+{% endif %}

@@ -1,0 +1,31 @@
+service:
+  name: ironic-ipxe
+  ports:
+    - "8080:{{ ironic.ipxe.external_port }}"
+  containers:
+    - name: ironic-ipxe
+      image: ironic-ipxe
+      probes:
+        readiness: "true"
+        liveness: "true"
+      volumes:
+        - name: ironic
+          type: host
+          path: /var/lib/ironic
+      pre:
+        - name: ipxe-bootstrap
+          command: /opt/ccp/bin/ipxe-bootstrap.sh
+      daemon:
+        command: nginx -g 'daemon off; error_log stderr; pid /var/lib/nginx/nginx.pid;'
+        files:
+          - ipxe-bootstrap.sh
+          - nginx-ipxe.conf
+files:
+  ipxe-bootstrap.sh:
+    path: /opt/ccp/bin/ipxe-bootstrap.sh
+    content: ipxe-bootstrap.sh
+    perm: "0755"
+  nginx-ipxe.conf:
+    path: /etc/nginx/sites-enabled/nginx-ipxe.conf
+    content: nginx-ipxe.conf.j2
+    perm: "0644"
