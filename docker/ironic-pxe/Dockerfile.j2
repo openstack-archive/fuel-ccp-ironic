@@ -6,6 +6,7 @@ RUN apt-get install -y --no-install-recommends \
         syslinux-common \
         syslinux \
         pxelinux \
+        ipxe \
     && apt-get clean
 
 COPY tftp-map-file /map-file

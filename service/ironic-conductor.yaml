@@ -18,6 +18,9 @@ service:
         dependencies:
           - ironic-db-sync
           - ironic-pxe:local
+        # {% if ironic.ipxe.enable %}
+          - ironic-ipxe
+        # {% endif %}
 files:
   ironic.conf:
     path: /etc/ironic/ironic.conf
