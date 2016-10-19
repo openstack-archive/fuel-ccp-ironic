@@ -10,3 +10,4 @@ RUN useradd --user-group --create-home --home-dir /var/lib/ironic ironic \
     && cp -r /ironic/etc/ironic/* /etc/ironic/ \
     && chown -R ironic: /etc/ironic /var/lib/ironic /var/log/ironic
 
+RUN usermod -a -G microservices ironic
