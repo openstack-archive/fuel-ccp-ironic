@@ -17,6 +17,17 @@ configs:
     enabled_drivers: "fake,agent_ssh,agent_ipmitool_socat"
     swift_temp_url_key: password
 
+    multitenancy:
+      enable: false
+      provisioning_net:
+        name: ironic-provisioning
+        physnet: physnet2
+        vlan: 101
+      cleaning_net:
+        name: ironic-provisioning
+        physnet: physnet2
+        vlan: 101
+
 sources:
   openstack/ironic:
     git_url: https://github.com/openstack/ironic.git
