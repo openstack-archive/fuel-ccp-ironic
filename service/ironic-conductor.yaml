@@ -13,6 +13,7 @@ service:
         - name: ironic
           type: host
           path: /var/lib/ironic
+      # {% if not ironic.standalone.enable %}
       pre:
         - name: ironic-post-swift-tempurl-key
           dependencies:
@@ -23,13 +24,17 @@ service:
                    --os-project-name service --os-project-domain-name default --os-user-domain-name default
                    --os-username {{ ironic.username }} --os-password {{ ironic.password }}
                    post -m "Temp-URL-Key:{{ ironic.swift_temp_url_key }}"
+      # {% endif %}
       daemon:
         command: ironic-conductor --config-file /etc/ironic/ironic.conf
         files:
           - ironic.conf
         dependencies:
           - ironic-db-sync
+          # {% if not ironic.standalone.enable %}
           - ironic-post-swift-tempurl-key
+          # {% endif %}
+    # {% if not ironic.standalone.enable %}
     - name: ironic-pxe
       image: ironic-pxe
       probes:
@@ -50,6 +55,7 @@ service:
                  /var/lib/ironic/tftpboot
         files:
           - pxe-bootstrap.sh
+    # {% endif %}
     # {% if ironic.ipxe.enable %}
     - name: ironic-ipxe
       image: ironic-ipxe

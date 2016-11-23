@@ -1,0 +1,12 @@
+FROM {{ image_spec("base-tools") }}
+MAINTAINER {{ maintainer }}
+
+COPY sid.list /etc/apt/sources.list.d/sid.list
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        mysql-client \
+        kea-dhcp4-server \
+        kea-admin \
+    && apt-get clean
+
+USER root

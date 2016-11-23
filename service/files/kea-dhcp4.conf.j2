@@ -1,0 +1,101 @@
+{
+"Dhcp4":
+{
+
+  "interfaces-config": {
+    "interfaces": [ "{{ ironic.standalone.dhcp.interface }}" ]
+  },
+
+  "client-classes":
+  [
+    {
+      "name": "baremetal",
+#      "test": "substring(option[77].hex,0,4) == 'iPXE'",
+      "test": "'1' == '1'",
+      "option-data":
+      [
+        {
+          "name": "boot-file-name",
+          "code": 67,
+          "space": "dhcp4",
+          "data": "http://ironic.ccp.external:80/v1/ipxe"
+        },
+       {
+         "name": "routers",
+         "data": "{{ ironic.standalone.dhcp.subnet.gateway }}"
+       },
+       {
+         "name": "domain-name-servers",
+         "data": "{{ ironic.standalone.dhcp.subnet.nameservers }}"
+       }
+      ]
+    }
+  ],
+
+  "lease-database": {
+    "type": "mysql",
+    "name": "{{ ironic.standalone.dhcp.db.name }}",
+    "host": "{{ address('mariadb') }}",
+    "port": "{{ mariadb.port.cont }}",
+    "user": "{{ ironic.standalone.dhcp.db.username }}",
+    "password": "{{ ironic.standalone.dhcp.db.password }}"
+  },
+
+  "hosts-database": {
+    "type": "mysql",
+    "name": "{{ ironic.standalone.dhcp.db.name }}",
+    "host": "{{ address('mariadb') }}",
+    "port": "{{ mariadb.port.cont }}",
+    "user": "{{ ironic.standalone.dhcp.db.username }}",
+    "password": "{{ ironic.standalone.dhcp.db.password }}"
+  },
+
+# Setup reclamation of the expired leases and leases affinity.
+# Expired leases will be reclaimed every 10 seconds. Every 25
+# seconds reclaimed leases, which have expired more than 3600
+# seconds ago, will be removed. The limits for leases reclamation
+# are 100 leases or 250 ms for a single cycle. A warning message
+# will be logged if there are still expired leases in the
+# database after 5 consecutive reclamation cycles.
+  "expired-leases-processing": {
+    "reclaim-timer-wait-time": 10,
+    "flush-reclaimed-timer-wait-time": 25,
+    "hold-reclaimed-time": 3600,
+    "max-reclaim-leases": 100,
+    "max-reclaim-time": 250,
+    "unwarned-reclaim-cycles": 5
+  },
+
+# Global (inherited by all subnets) lease lifetime is mandatory parameter.
+  "valid-lifetime": 4000,
+
+  "subnet4": [
+    {
+      "subnet": "{{ ironic.standalone.dhcp.subnet.cidr }}",
+      "pools": [ { "pool": "{{ ironic.standalone.dhcp.subnet.start }} - {{ ironic.standalone.dhcp.subnet.end }}" } ],
+      "client-class": "baremetal"
+    }
+  ]
+},
+
+"Logging":
+{
+  "loggers": [
+    {
+      "name": "kea-dhcp4",
+      "output_options": [
+          {
+            "output": "stdout"
+          }
+      ],
+{% if ironic.logging_debug %}
+      "severity": "DEBUG",
+{% else %}
+      "severity": "INFO",
+{% endif %}
+      "debuglevel": 0
+    },
+  ]
+}
+
+}

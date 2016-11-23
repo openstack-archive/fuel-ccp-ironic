@@ -12,8 +12,12 @@ enabled_drivers = {{ ironic.enabled_drivers }}
 enabled_network_interfaces = noop,flat
 default_network_interface = flat
 
+{% if ironic.standalone.enable %}
+auth_strategy=noauth
+{% endif %}
+
 [api]
-public_endpoint = {{ address('ironic', ironic.api_port, external=True, with_scheme=True) }}
+public_endpoint = http://ironic.ccp.external:80
 host_ip = {{ network_topology["private"]["address"] }}
 port = {{ ironic.api_port.cont }}
 
@@ -21,6 +25,11 @@ port = {{ ironic.api_port.cont }}
 connection = mysql+pymysql://{{ ironic.db.username }}:{{ ironic.db.password }}@{{ address('mariadb', mariadb.port) }}/{{ ironic.db.name }}
 max_retries = -1
 
+[conductor]
+api_url = http://ironic.ccp.external:80
+automated_clean = {{ ironic.automated_clean }}
+
+{% if not ironic.standalone.enable %}
 [keystone_authtoken]
 auth_uri = {{ address('keystone', keystone.public_port, with_scheme=True) }}
 auth_url = {{ address('keystone', keystone.admin_port, with_scheme=True) }}
@@ -40,10 +49,6 @@ user_domain_id = default
 project_name = service
 username = {{ ironic.username }}
 password = {{ ironic.password }}
-
-[conductor]
-api_url = {{ address('ironic', ironic.api_port, external=True, with_scheme=True) }}
-automated_clean = {{ ironic.automated_clean }}
 
 [neutron]
 auth_type = password
@@ -70,6 +75,10 @@ glance_api_servers = {{ address('glance-api', glance.api_port, with_scheme=True)
 swift_endpoint_url = {{ address('radosgw', radosgw.port, external=True, with_scheme=True) }}
 swift_temp_url_key = {{ ironic.swift_temp_url_key }}
 temp_url_endpoint_type = radosgw
+{% else %}
+[dhcp]
+dhcp_provider=none
+{% endif %}
 
 [pxe]
 pxe_append_params = nofb nomodeset vga=normal console=ttyS0 systemd.journald.forward_to_console=yes ipa-debug=1
@@ -79,6 +88,7 @@ tftp_master_path = /var/lib/ironic/tftpboot/master_images
 {% if ironic.ipxe.enable %}
 ipxe_enabled = True
 ipxe_use_swift = {{ ironic.ipxe.use_swift }}
+ipxe_server_enabled = True
 pxe_bootfile_name=undionly.kpxe
 pxe_config_template=$pybasedir/drivers/modules/ipxe_config.template
 

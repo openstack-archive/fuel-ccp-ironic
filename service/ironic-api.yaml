@@ -26,6 +26,7 @@ service:
             - ironic-db-create
           files:
             - ironic.conf
+        # {% if not ironic.standalone.enable %}
         - name: ironic-user-create
           type: single
           command: openstack user create --project service --password {{ ironic.password }} {{ ironic.username }}
@@ -59,6 +60,7 @@ service:
           type: single
           command: openstack endpoint create --region RegionOne baremetal admin
                    {{ address('ironic-api', ironic.api_port, with_scheme=True) }}
+        # {% endif %}
       daemon:
         command: ironic-api --config-file /etc/ironic/ironic.conf
         files:
