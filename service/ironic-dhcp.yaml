@@ -1,0 +1,36 @@
+service:
+  name: ironic-dhcp
+  hostNetwork: true
+  containers:
+    - name: ironic-dhcp
+      image: ironic-dhcp
+      probes:
+        readiness: "true"
+        liveness:
+          command: "true"
+          type: "exec"
+      pre:
+        - name: ironic-dhcp-db-create
+          type: single
+          command: mysql -v -u root -p{{ db.root_password }} -h {{ address('mariadb') }} -P {{ mariadb.port.cont }} -e
+                   'create database `{{ ironic.standalone.dhcp.db.name }}`; grant all privileges on `{{ ironic.standalone.dhcp.db.name }}`.* to
+                   "{{ ironic.standalone.dhcp.db.username }}"@"%" identified by "{{ ironic.standalone.dhcp.db.password }}"'
+          dependencies:
+            - mariadb
+        - name: ironic-dhcp-db-sync
+          type: single
+          command: mysql -v -u root -p{{ db.root_password }} -h {{ address('mariadb') }} -P {{ mariadb.port.cont }}
+                   {{ ironic.standalone.dhcp.db.name }} < /usr/share/kea-admin/scripts/mysql/dhcpdb_create.mysql
+          dependencies:
+            - ironic-dhcp-db-create
+        - name: test
+          command: cat /etc/kea/kea-dhcp4.conf
+      daemon:
+        command: /usr/sbin/kea-dhcp4 -c /etc/kea/kea-dhcp4.conf
+        files:
+          - kea-dhcp4.conf
+files:
+  kea-dhcp4.conf:
+    path: /etc/kea/kea-dhcp4.conf
+    content: kea-dhcp4.conf.j2
+    perm: "0600"
