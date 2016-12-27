@@ -11,7 +11,7 @@ enabled_network_interfaces = noop,flat
 default_network_interface = flat
 
 [api]
-public_endpoint = http://{{ address('ironic', ironic.api_port, external=True, with_scheme=False) }}
+public_endpoint = http://{{ network_topology["private"]["address"] }}:{{ ironic.api_port.cont }}
 host_ip = {{ network_topology["private"]["address"] }}
 port = {{ ironic.api_port.cont }}
 
@@ -31,7 +31,7 @@ username = {{ ironic.username }}
 password = {{ ironic.password }}
 
 [conductor]
-api_url = http://{{ address('ironic', ironic.api_port, external=True, with_scheme=False) }}
+api_url = http://{{ network_topology["private"]["address"] }}:{{ ironic.api_port.cont }}
 automated_clean = {{ ironic.automated_clean }}
 
 [neutron]
@@ -56,7 +56,7 @@ password = {{ ironic.password }}
 
 glance_api_servers = {{ address('glance-api', glance.api_port, with_scheme=True) }}
 
-swift_endpoint_url = http://{{ address('radosgw', radosgw.port, external=True, with_scheme=False) }}
+swift_endpoint_url = http://{{ network_topology["private"]["address"] }}:{{ radosgw.port.cont }}/swift
 swift_temp_url_key = {{ ironic.swift.temp_url_key }}
 temp_url_endpoint_type = radosgw
 
