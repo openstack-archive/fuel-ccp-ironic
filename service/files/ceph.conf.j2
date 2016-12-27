@@ -1,0 +1,26 @@
+[global]
+fsid = {{ ceph.fsid }}
+mon_host = {{ ceph.mon_host }}
+auth_cluster_required = cephx
+auth_service_required = cephx
+auth_client_required = cephx
+debug_rgw = 20
+
+[client.radosgw.gateway]
+keyring = /var/lib/ceph/radosgw/ceph-rgw/keyring
+rgw socket path = /tmp/radosgw.sock
+log file = /var/log/ceph/ceph-rgw-{{ namespace }}.log
+rgw data = /var/lib/ceph/radosgw/ceph-rgw
+rgw frontends = civetweb port={{ radosgw.port.cont }} num_threads=50
+
+rgw keystone api version = 3
+rgw keystone admin domain = Default
+rgw keystone admin project = {{ openstack.project_name }}
+rgw keystone url = {{ address('keystone', keystone.admin_port, with_scheme=True) }}
+rgw keystone accepted roles = Member, _member_, admin
+rgw keystone revocation interval = 900
+rgw s3 auth use keystone = true
+rgw keystone verify ssl = {{ keystone.tls.enabled }}
+rgw keystone admin user = {{ openstack.user_name }}
+rgw keystone admin password = {{ openstack.user_password }}
+
