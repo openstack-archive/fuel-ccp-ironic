@@ -4,7 +4,7 @@ service:
   hostNetwork: true
   kind: DaemonSet
   containers:
-    - name: ironic-conductor
+    - name: conductor
       image: ironic-conductor
       probes:
         readiness: "true"
@@ -33,7 +33,7 @@ service:
         dependencies:
           - ironic-db-sync
           - ironic-post-swift-tempurl-key
-    - name: ironic-pxe
+    - name: pxe
       image: ironic-pxe
       probes:
         readiness: "true"
@@ -53,7 +53,7 @@ service:
                  /var/lib/ironic/tftpboot
         files:
           - pxe-bootstrap.sh
-    - name: ironic-ipxe
+    - name: ipxe
       image: ironic-ipxe
       probes:
         readiness: "true"
@@ -68,6 +68,23 @@ service:
         command: nginx -g 'daemon off; error_log stderr;'
         files:
           - nginx-ipxe.conf
+    - name: radosgw
+      image: radosgw
+      daemon:
+        command: radosgw -c /etc/ceph/ceph.conf -n client.radosgw.gateway -d
+        files:
+          - ceph-conf
+          - radosgw-ceph-key
+          - radosgw-keyring
+    - name: api
+      image: ironic-api
+      daemon:
+        command: ironic-api --config-file /etc/ironic/ironic.conf
+        files:
+          - ironic.conf
+        dependencies:
+          - rpc
+          - ironic-db-sync
 files:
   ironic.conf:
     path: /etc/ironic/ironic.conf
@@ -85,3 +102,12 @@ files:
     path: /home/ironic/.ssh/id_rsa
     content: ssh_key.j2
     perm: "0400"
+  ceph-conf:
+    path: /etc/ceph/ceph.conf
+    content: ceph.conf.j2
+  radosgw-ceph-key:
+    path: /etc/ceph/ceph.client.radosgw.keyring
+    content: ceph.client.radosgw.keyring.j2
+  radosgw-keyring:
+    path: /var/lib/ceph/radosgw/ceph-rgw/keyring
+    content: ceph.client.radosgw.keyring.j2
