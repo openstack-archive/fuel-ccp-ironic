@@ -65,7 +65,7 @@ service:
         files:
           - ironic.conf
         dependencies:
-          - rabbitmq
+          - "{{ messaging.dependencies[messaging.backend.rpc] }}"
 files:
   ironic.conf:
     path: /etc/ironic/ironic.conf
