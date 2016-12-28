@@ -5,8 +5,6 @@ use_stderr = true
 
 my_ip = {{ network_topology["private"]["address"] }}
 
-transport_url = rabbit://{{ rabbitmq.user }}:{{ rabbitmq.password }}@{{ address('rabbitmq', rabbitmq.port) }}
-
 enabled_drivers = {{ ironic.enabled_drivers }}
 
 enabled_network_interfaces = noop,flat
@@ -86,3 +84,6 @@ http_url=http://{{ network_topology["private"]["address"] }}:{{ ironic.ipxe.exte
 
 [ansible]
 use_ramdisk_callback = {{ ironic.ansible.use_ramdisk_callback }}
+
+{# messaging macros template #}
+{{ oslo_messaging[messaging.backend.rpc]('rpc_config') }}
