@@ -16,7 +16,7 @@ host_ip = {{ network_topology["private"]["address"] }}
 port = {{ ironic.api_port.cont }}
 
 [database]
-connection = mysql+pymysql://{{ ironic.db.username }}:{{ ironic.db.password }}@{{ address('mariadb', mariadb.port) }}/{{ ironic.db.name }}
+connection = mysql+pymysql://{{ ironic.db.username }}:{{ ironic.db.password }}@{{ address(service.database) }}/{{ ironic.db.name }}{% if percona.tls.enabled %}?ssl_ca=/opt/ccp/etc/tls/ca.pem{% endif %}
 max_retries = -1
 
 [keystone_authtoken]
