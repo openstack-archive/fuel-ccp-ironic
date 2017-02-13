@@ -29,14 +29,15 @@ service:
             - ironic.conf
         - name: ironic-user-create
           type: single
-          command: openstack user create --project service --password {{ ironic.password }} {{ ironic.username }}
+          command: openstack user create --domain {{ service_account.domain }} --password {{ ironic.password }} {{ ironic.username }}
           dependencies:
-            - keystone-create-project
+            - keystone-create-domain
         - name: ironic-role-add
           dependencies:
             - ironic-user-create
+            - keystone-create-project
           type: single
-          command: openstack role add --project service --user {{ ironic.username }} admin
+          command: openstack role add --project {{ service_account.project }} --user {{ ironic.username }} admin
         - name: ironic-service-create
           dependencies:
             - keystone
