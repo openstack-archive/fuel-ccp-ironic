@@ -78,3 +78,4 @@ use_ramdisk_callback = {{ ironic.ansible.use_ramdisk_callback }}
 
 {# messaging macros template #}
 {{ oslo_messaging[messaging.backend.rpc]('rpc_config') }}
+{{ oslo_messaging.rabbit_tls() }}
