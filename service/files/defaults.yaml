@@ -12,7 +12,7 @@ configs:
       password: password
       name: ironic
 
-    logging_debug: false
+    debug: false
 
     automated_clean: false
     enabled_drivers: "fake,pxe_ssh_ansible,pxe_ipmitool_ansible"
