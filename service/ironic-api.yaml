@@ -15,13 +15,13 @@ service:
       pre:
         - name: ironic-db-create
           type: single
-          command: mysql -v -u root -p{{ db.root_password }} -h {{ address(service.database) }} -e "create database `{{ ironic.db.name }}`;
+          command: mysql -v -u root -p{{ db.root_password }} -h {{ address(database) }} -e "create database `{{ ironic.db.name }}`;
                    create user '{{ ironic.db.username }}'@'%' identified by '{{ ironic.db.password }}'
                    {% if db.tls.enabled %} require ssl {% endif %};
                    grant all privileges on `{{ ironic.db.name }}`.* to '{{ ironic.db.username }}'@'%' identified by '{{ ironic.db.password }}'
                    {% if db.tls.enabled %} require ssl {% endif %};"
           dependencies:
-            - {{ service.database }}
+            - {{ database }}
         - name: ironic-db-sync
           type: single
           command: ironic-dbsync
