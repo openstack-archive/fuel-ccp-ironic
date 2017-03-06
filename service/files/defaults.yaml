@@ -4,6 +4,20 @@ configs:
       cont: 6385
       ingress: ironic
 
+    debug: false
+
+    automated_clean: false
+    enabled_drivers: "fake,pxe_ssh_ansible,pxe_ipmitool_ansible"
+
+    ipxe:
+      external_port: 6388
+      use_swift: false
+
+    ansible:
+      use_ramdisk_callback: true
+
+secret_configs:
+  ironic:
     username: ironic
     password: password
 
@@ -12,21 +26,10 @@ configs:
       password: password
       name: ironic
 
-    debug: false
-
-    automated_clean: false
-    enabled_drivers: "fake,pxe_ssh_ansible,pxe_ipmitool_ansible"
     swift:
       temp_url_key: password
 
-    ipxe:
-      external_port: 6388
-      use_swift: false
-
-    ssh_key: false
-
-    ansible:
-      use_ramdisk_callback: true
+      ssh_key: false
 
 sources:
   openstack/ironic:
