@@ -20,9 +20,10 @@ service:
           dependencies:
             - radosgw
           type: single
-          command: swift --insecure
+          command: swift --insecure --auth-version 3
                    --os-auth-url {{ address('keystone', keystone.public_port, with_scheme=True) }}/v3
-                   --os-project-name service --os-project-domain-name default --os-user-domain-name default
+                   --os-project-name {{ service_account.project }} --os-project-domain-name {{ service_account.domain }}
+                   --os-user-domain-name {{ service_account.domain }}
                    --os-username {{ glance.user }} --os-password {{ glance.password }} --os-endpoint-type internalURL
                    post -m "Temp-URL-Key:{{ ironic.swift.temp_url_key }}"
       daemon:
