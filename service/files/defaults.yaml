@@ -7,7 +7,7 @@ configs:
     debug: false
 
     automated_clean: false
-    enabled_drivers: "fake,pxe_ssh_ansible,pxe_ipmitool_ansible"
+    enabled_drivers: "fake,agent_ssh,agent_ipmitool"
 
     ipxe:
       external_port: 6388
