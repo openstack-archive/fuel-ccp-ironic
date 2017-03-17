@@ -1,0 +1,7 @@
+FROM {{ image_spec("ironic-base") }}
+MAINTAINER {{ maintainer }}
+
+RUN apt-get install -y --no-install-recommends \
+        mysql-client \
+    && apt-get clean
+
