@@ -1,0 +1,39 @@
+upgrade:
+  name: upgrade-ironic
+  image: ironic-upgrade
+  steps:
+    - name: backup
+      command: /opt/ccp/bin/backup.sh
+      files:
+        - backup-sh
+      volumes:
+        - name: backup-dir
+          path: /var/ccp/backup/ironic
+          type: host
+          readOnly: false
+      topology_key: backup
+    - name: kill-services
+      type: kill-services
+    - name: db-sync
+      type: single
+      command: ironic-dbsync
+      files:
+        - ironic.conf
+    - name: roll-api
+      type: rolling-upgrade
+      services:
+        - ironic-api
+    - name: roll-conductor
+      type: rolling-upgrade
+      services:
+        - ironic-conductor
+files:
+  ironic.conf:
+    path: /etc/ironic/ironic.conf
+    content: ironic.conf.j2
+    perm: "0600"
+
+  backup-sh:
+    path: /opt/ccp/bin/backup.sh
+    content: backup.sh.j2
+    perm: "500"
