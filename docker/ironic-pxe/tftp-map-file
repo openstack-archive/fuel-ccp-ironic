@@ -1,2 +1,0 @@
-r ^([^/]) /var/lib/ironic/tftpboot/\1
-r ^(/tftpboot/) /var/lib/ironic/tftpboot/\2

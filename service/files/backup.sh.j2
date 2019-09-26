@@ -1,7 +1,0 @@
-#!/bin/bash -ex
-set -o pipefail
-BACKUP_FILE="/var/ccp/backup/ironic/backup-$(date "+%Y%m%d%H%M%S").sql"
-mysqldump {% if db.tls.enabled %} --ssl-mode REQUIRED {% endif %} -h {{ address("database") }} \
-    -u {{ ironic.db.username }} -p{{ ironic.db.password }} \
-    --single-transaction {{ ironic.db.name }} > "${BACKUP_FILE}"
-

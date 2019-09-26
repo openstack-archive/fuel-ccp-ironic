@@ -1,9 +1,0 @@
-actions:
-  - name: ironic-db-sync
-    image: ironic-base
-    dependencies:
-      - ironic-db-create
-    command: ironic-dbsync
-    files:
-      - path: /etc/ironic/ironic.conf
-        content: ironic.conf.j2
